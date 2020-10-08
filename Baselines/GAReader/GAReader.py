@@ -45,6 +45,15 @@ class GAReader(nn.Module):
     """
 
     def __init__(self, embedding_dim, output_dim, hidden_size, rnn_num_layers, ga_layers, bidirectional, dropout, word_emb):
+        """
+        embedding_dim = 300
+        output_dim = 5
+        hidden_size = 128
+        rnn_num_layers = 1
+        ga_layers = 1
+        dropout = 0.2
+        """
+
         super(GAReader, self).__init__()
 
         self.word_embedding = nn.Embedding.from_pretrained(word_emb, freeze=False)
@@ -128,7 +137,7 @@ class GAReader(nn.Module):
         ATT_article_question = self.dropout(self.mlp_att(question_hidden, article_out, article_out))
         # ATT_article_question: [batch_size, hidden_size * 2]
         
-        # 融合 option 信息 [batch_size, hidden_size * 2]
+        # Fusion option info [batch_size, hidden_size * 2]
         ATT_option0 = self.dropout(self.dot_layer(
             ATT_article_question, option0_out, option0_out))
         ATT_option1 = self.dropout(self.dot_layer(

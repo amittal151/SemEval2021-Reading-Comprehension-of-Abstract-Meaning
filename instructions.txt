@@ -1,0 +1,21 @@
+File    :   arc_embedding_utils.py
+Line    :   37  set (device = -1) 
+
+File    :   Run_GAReader.py
+Line    :   209 - 211 (Change directories, the respective paths to data or embedding 				directories)
+
+
+
+
+If error comes as module : Baselines not found. 
+	type these commands in your terminal :
+	
+prompt : 	
+	$  vim ~/.bash_profile
+vim :
+	export PYTHONPATH='Semeval_repo_directory'
+
+	
+	Now, open new terminal and execute the code, it must work fine now :)
+
+
