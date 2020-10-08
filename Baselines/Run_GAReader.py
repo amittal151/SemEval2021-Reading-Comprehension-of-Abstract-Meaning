@@ -32,7 +32,7 @@ def train(epoch_num, model, train_dataloader, dev_dataloader, optimizer, criteri
     best_acc = 0.0
 
     for epoch in range(int(epoch_num)):
-        print(f'---------------- Epoch: {epoch + 1:02} ----------')
+        print('---------------- Epoch: {epoch + 1:02} ----------')
 
         epoch_loss = 0
         train_steps = 0
@@ -41,7 +41,8 @@ def train(epoch_num, model, train_dataloader, dev_dataloader, optimizer, criteri
         all_labels = np.array([], dtype=int)
 
         for step, batch in enumerate(tqdm(train_dataloader, desc="Iteration")):
-
+            
+            # zero the parameter gradients
             optimizer.zero_grad()
 
             logits = model(batch)
@@ -133,6 +134,9 @@ def evaluate(model, iterator, criterion, label_list):
 
 
 def main(config, model_filename):
+    """
+    output_dir = model_dir + "GAReader/" 
+    """
     if not os.path.exists(config.output_dir):
         os.makedirs(config.output_dir)
 
@@ -145,8 +149,11 @@ def main(config, model_filename):
     # Prepare the device
     gpu_ids = [int(device_id) for device_id in config.gpu_ids.split()]
     device, n_gpu = get_device(gpu_ids[0])
+    # print("Device, here : ", device, n_gpu)
+
     if n_gpu > 1:
         n_gpu = len(gpu_ids)
+
 
     # Set Random Seeds
     random.seed(config.seed)
@@ -161,15 +168,24 @@ def main(config, model_filename):
     id_field.is_target = False
     text_field = data.Field(tokenize='spacy', lower=True,
                             include_lengths=True)
-    label_field = data.LabelField(dtype=torch.long)
 
+    label_field = data.LabelField()
+    
     train_iterator, dev_iterator, test_iterator = load_data(
         config.data_path, id_field, text_field, label_field, config.train_batch_size, config.dev_batch_size,
         config.test_batch_size, device, config.glove_word_file, config.cache_dir)
 
+    # for iter in train_iterator :
+    #     print(iter)
+    #     print(type(iter))
+    #     print(dir(iter))
+    #     print(iter.train)
+    #     sys.exit()
+    
     # Word Vector
     word_emb = text_field.vocab.vectors
-
+    print(dir(word_emb))
+    sys.exit()
     if config.model_name == "GAReader":
         from Baselines.GAReader.GAReader import GAReader
         model = GAReader(
@@ -178,8 +194,8 @@ def main(config, model_filename):
             config.dropout, word_emb)
         print(model)
 
-    # optimizer = optim.Adam(model.parameters(), lr=config.lr)
-    optimizer = optim.SGD(model.parameters(), lr=config.lr)
+    optimizer = optim.Adam(model.parameters(), lr=config.lr)
+    # optimizer = optim.SGD(model.parameters(), lr=config.lr)
     criterion = nn.CrossEntropyLoss()
 
     model = model.to(device)
@@ -192,7 +208,7 @@ def main(config, model_filename):
     model.load_state_dict(torch.load(model_file))
 
     test_loss, test_acc, test_report = evaluate(
-        model, test_iterator, criterion, ['0', '1', '2', '3'])
+        model, test_iterator, criterion, ['0', '1', '2', '3', '4'])
     print("-------------- Test -------------")
     print("\t Loss: {} | Acc: {} | Macro avg F1: {} | Weighted avg F1: {}".format(
         test_loss, test_acc, test_report['macro avg']['f1-score'], test_report['weighted avg']['f1-score']))
